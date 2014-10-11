@@ -84,27 +84,12 @@ public class CLI {
                         System.out.println("Users:");
                         users = pDAO.getAllUsers();
                         for (User a:users) {
-                            if (a.getName().equals(s2)) {
                                 System.out.println(a.getName());
-                                break;
-                            }
                         }
                     }//bring all users
                 }
                 
-            if (cl.hasOption("getall")) {
-                if (cl.hasOption("album") && (cl.hasOption("user"))) { //bring all users
-                    //if (("users").equals(m.group(1))) {
-                    System.out.println("Users:");
-                    users = pDAO.getAllUsers();
-                    for (User a:users) {
-                        if (a.getName().equals(s2)) {
-                            System.out.println(a.getName());
-                            break;
-                        }
-                    }
-                }//bring all users
-            }
+            
             } catch (ParseException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
