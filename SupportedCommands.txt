@@ -1,0 +1,6 @@
+get-users
+get-user user=User1
+get-albums user=User1
+get-album user=User1 album=Album2
+get-photos user=User1 album=Album2
+get-photo user=User1 album=Album2 photo=photo4
