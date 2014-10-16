@@ -10,17 +10,25 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
+class DBException extends Exception {
+    private static final long serialVersionUID = 1L;
+    public DBException() {super();}
+    public DBException(String string) {super(string);}
+    public DBException(String string, Exception e) {super(string, e);}
+
+}
+
 public class PhotosDAO {
-    
+
     private static Connection connection = null;
     private static PreparedStatement getAllUsersStatement = null;
     private static PreparedStatement getAllAlbumsStatement = null;
     private static PreparedStatement getAllUserAlbumsStatement = null;
     private static PreparedStatement getAllPhotosInAlbumStatement = null;
-  
+
     private PhotosDAO() {}
-    
-    
+
+
     private static int prepareStatements() {
         if (connection != null) {
             try {
@@ -52,36 +60,32 @@ public class PhotosDAO {
         }
         return -1;
     }
-    
-    public static boolean connectDB() {
+
+    public static void connectDB(String address, String user, String password) throws DBException {
         System.out.println("-------- Oracle JDBC Connection Testing ------");
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
         } catch (ClassNotFoundException e) {
-            System.out.println("Where is your Oracle JDBC Driver?");
-            e.printStackTrace();
+            throw new DBException("JDBC Driver not registered!");
         }
-        System.out.println("Oracle JDBC Driver Registered!");
         connection = null;
         try {
-            connection = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@//192.168.17.132:1521/ORADB10G", "USERA",
-                    "USERA");
+            connection = DriverManager.getConnection(address, user, password);
+            //                    "jdbc:oracle:thin:@//192.168.17.132:1521/ORADB10G", "USERA",
+            //                    "USERA");
         } catch (SQLException e) {
-            System.out.println("Connection Failed! Check output console");
-            e.printStackTrace();
+            throw new DBException("Connection Failed!");
         }
         if (connection != null) {
-            System.out.println("You made it, take control your database now!");
             prepareStatements();
-            return true;
+            //return true;
         } else {
-            System.out.println("Failed to make connection!");
+            throw new DBException("Connection Failed!");
         }
-        return false;
-        
+        //return false;
+
     }
-    
+
     public static void close() {
         System.out.println("Closing...");
         if (connection != null) {
@@ -89,12 +93,12 @@ public class PhotosDAO {
                 connection.close();
                 System.out.println("Closed correctly");
             } catch (SQLException e) {
-                
+
             }
         }
         //System.out.println("Closed");
     }
-    
+
     public static List<Album> getAllAlbums() throws SQLException {
         List<Album> list = new LinkedList<Album>();
         if (connection != null && getAllAlbumsStatement != null) {
@@ -105,7 +109,7 @@ public class PhotosDAO {
         }
         return list;
     }
-    
+
     public static List<User> getAllUsers() throws SQLException {
         List<User> list = new LinkedList<User>();
         if (connection != null && getAllUsersStatement != null) {
@@ -116,7 +120,7 @@ public class PhotosDAO {
         }
         return list;
     }
-    
+
     public static List<Album> getAllUserAlbums(long user_id) throws SQLException {
         List<Album> albums = new LinkedList<Album>();
         if (connection != null && getAllUserAlbumsStatement != null) {
@@ -130,7 +134,7 @@ public class PhotosDAO {
         }
         return albums;
     }
-    
+
     public static List<Photo> getAllPhotosInAlbum(long album_id) throws SQLException {
         List<Photo> photos = new LinkedList<Photo>();
         if (connection != null && getAllUserAlbumsStatement != null) {
@@ -138,36 +142,36 @@ public class PhotosDAO {
             ResultSet rs = getAllPhotosInAlbumStatement.executeQuery();
             while (rs.next()) {
                 photos.add( new Photo(
-                                            rs.getString(1),
-                                            rs.getLong(2),
-                                            rs.getLong(3),
-                                            rs.getLong(4),
-                                            rs.getString(5),
-                                            rs.getString(6),
-                                            new byte[1]
-                                        )
-                            );
+                        rs.getString(1),
+                        rs.getLong(2),
+                        rs.getLong(3),
+                        rs.getLong(4),
+                        rs.getString(5),
+                        rs.getString(6),
+                        new byte[1]
+                        )
+                        );
             }
         } else {
             throw new NullPointerException();
         }
         return photos;
     }
-    
+
     public static Photo getPhoto(BigInteger id) {
-        
+
         return new Photo();
     }
-    
+
     public static List<Photo> getAllPhotos(BigInteger maxcount) {
-        
+
         return new LinkedList<Photo>();
     }
-    
+
     public static User getUser(BigInteger id) {
         return new User();
     }
-    
+
     public static Album getAlbum (BigInteger id) {
         return new Album();
     }

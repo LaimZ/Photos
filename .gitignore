@@ -16,3 +16,6 @@ classes/
 # Maven
 log/
 target/
+
+# apche cli
+lib/commons-cli-1.2-bin/commons-cli-1.2/apidocs

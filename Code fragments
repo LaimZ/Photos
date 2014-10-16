@@ -1,0 +1,14 @@
+in Photos:
+           /* try {
+                users = PhotosDAO.getAllUsers();
+                for (User a:users) {
+                    System.out.println("User " + a.getName());
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                System.out.println("There is no connection!");
+                e.printStackTrace();
+            }*/
+            
+            
+            
