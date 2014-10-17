@@ -10,13 +10,10 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
-class DBException extends Exception {
-    private static final long serialVersionUID = 1L;
-    public DBException() {super();}
-    public DBException(String string) {super(string);}
-    public DBException(String string, Exception e) {super(string, e);}
+import ru.ncedu.laimz.photos.model.Album;
+import ru.ncedu.laimz.photos.model.Photo;
+import ru.ncedu.laimz.photos.model.User;
 
-}
 
 public class PhotosDAO {
 

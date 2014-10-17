@@ -1,18 +1,10 @@
-package ru.ncedu.laimz.photos;
+package ru.ncedu.laimz.photos.view;
 
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
-class ConsoleViewExcepton extends Exception {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-    ConsoleViewExcepton() { super(); }
-    ConsoleViewExcepton(String s) { super(s); }
-    ConsoleViewExcepton(String s, Exception e) { super(s, e); }
-}
+
 
 /**
  * Class for communication with user via PrintStream and Scanner. Can be used

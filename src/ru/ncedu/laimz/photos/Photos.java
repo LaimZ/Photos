@@ -2,6 +2,10 @@ package ru.ncedu.laimz.photos;
 
 import java.sql.SQLException;
 
+import ru.ncedu.laimz.photos.controller.Controller;
+import ru.ncedu.laimz.photos.view.ConsoleView;
+import ru.ncedu.laimz.photos.view.ConsoleViewExcepton;
+
 public class Photos {
 
     /**

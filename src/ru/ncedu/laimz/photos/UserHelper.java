@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+import ru.ncedu.laimz.photos.model.User;
+
 
 public class UserHelper {
     private UserHelper() {};

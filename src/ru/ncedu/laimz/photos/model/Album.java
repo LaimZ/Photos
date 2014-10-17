@@ -1,4 +1,4 @@
-package ru.ncedu.laimz.photos;
+package ru.ncedu.laimz.photos.model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

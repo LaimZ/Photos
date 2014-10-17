@@ -1,4 +1,4 @@
-package ru.ncedu.laimz.photos;
+package ru.ncedu.laimz.photos.controller;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -6,12 +6,14 @@ import org.apache.commons.cli.GnuParser;
 
 import org.apache.commons.cli.*;
 
-class ControllerException extends Exception {
-    private static final long serialVersionUID = 1L;
-    ControllerException() { super(); }
-    public ControllerException(String string) {super(string);}
-    public ControllerException(String string, Exception e) {super(string, e);}
-}
+import ru.ncedu.laimz.photos.DBException;
+import ru.ncedu.laimz.photos.PhotosDAO;
+import ru.ncedu.laimz.photos.UserHelper;
+import ru.ncedu.laimz.photos.model.User;
+import ru.ncedu.laimz.photos.view.ConsoleView;
+import ru.ncedu.laimz.photos.view.ConsoleViewExcepton;
+
+
 
 public class Controller {
     //private  static final Logger log = Logger.getLogger(Controller.class.getName());
