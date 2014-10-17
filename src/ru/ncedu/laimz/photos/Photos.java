@@ -1,8 +1,6 @@
 package ru.ncedu.laimz.photos;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Scanner;
 
 public class Photos {
 
@@ -26,7 +24,6 @@ public class Photos {
             System.out.println("Failed to connect DB!");
             e1.printStackTrace();
         } catch (ConsoleViewExcepton e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
