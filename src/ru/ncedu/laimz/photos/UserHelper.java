@@ -17,23 +17,18 @@ public class UserHelper {
         }
     }
     
-    public static User getUser(String name) throws DBException {
-        List<User> users = new LinkedList<User>();
-        User user = null;
+    public static List<User> getUserByName(String name) throws DBException {
         try {
-            users = PhotosDAO.getAllUsers();
-            for (User a:users) {
-                if (a.getName().equals(name)) {
-                    user = a;
-                    break;
-                }
-            }
-            if (user != null) {
-                return user;
-            } else {
-                return null;
-            }
+            return PhotosDAO.getUserByName(name);
         } catch (SQLException e) {
+            throw new DBException("Exception while getting user", e);
+        }
+    }
+
+    public static User getUserById(long id) throws DBException {
+        try {
+            return PhotosDAO.getUserById(id);
+        } catch (DBException e) {
             throw new DBException("Exception while getting user", e);
         }
     }

@@ -17,7 +17,7 @@ public class Album {
         this.name = rs.getString(3);
     }*/
     
-    public Album (long id, long author_id, String name) {
+    public Album (long id, String name, long author_id) {
         this.id = id;
         this.author_id = author_id;
         this.name = name;

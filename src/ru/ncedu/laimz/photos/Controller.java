@@ -1,10 +1,7 @@
 package ru.ncedu.laimz.photos;
 
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Scanner;
 import org.apache.commons.cli.GnuParser;
 
 import org.apache.commons.cli.*;
@@ -19,12 +16,17 @@ class ControllerException extends Exception {
 public class Controller {
     //private  static final Logger log = Logger.getLogger(Controller.class.getName());
     private Options options2 = new Options();
-    private Scanner sc;
-    private PrintStream ps;
+    //private cvanner cv;
+    //private PrintStream cv;
+    private ConsoleView cv = null;
     //private PhotosDAO pDAO;
 
-    public Controller(InputStream is, PrintStream ps/*, PhotosDAO pDAO*/) {
-        sc = new Scanner(is);
+    public Controller(ConsoleView cv/*, PhotosDAO pDAO*/) {
+        if (cv != null) {
+            this.cv = cv;
+        } else {
+            throw new NullPointerException("Trying to set ConsoleView as null");
+        }
         options2.addOption("getuser",   "getuser", false, "Get some info about user");
         options2.addOption("getusers", "getusers", false, "Get some info (users, albums, photos)");
         options2.addOption("getalbums",  "getalbums", false, "User name");
@@ -34,15 +36,16 @@ public class Controller {
         options2.addOption("quit", "quit", false, "Exit program");
         options2.addOption("user", "user", true, "Specify user");
         options2.getOption("user").setValueSeparator('=');
+        options2.addOption("id", "id", true, "Specify user id");
+        options2.getOption("id").setValueSeparator('=');
         options2.addOption("album", "album", true, "Specify album");
         options2.getOption("album").setValueSeparator('=');
         options2.addOption("photo", "photo", true, "Specify photo");
         options2.getOption("photo").setValueSeparator('=');
-        //this.pDAO = pDAO;
-        this.ps = ps;
     }
     
-    public void connectDB(String address, String user, String password) throws DBException {
+    public void connectDB(String address, String user, String password) throws DBException, ConsoleViewExcepton {
+        cv.println("Connecting Database ...");
         PhotosDAO.connectDB(address, user, password);
     }
     
@@ -58,8 +61,9 @@ public class Controller {
      * @throws SQLException will be removed soon.
      * @throws DBException if connection was close suddenly or other error
      * occured.
+     * @throws ConsoleViewExcepton 
      */
-    public boolean parseOneCommand() throws SQLException, DBException  {
+    public boolean parseOneCommand() throws SQLException, DBException, ConsoleViewExcepton  {
 //        List<User> users;// = new LinkedList<User>();
 //        List<Album> albums;// = new LinkedList<Album>();
 //        List<Photo> photos;
@@ -68,43 +72,69 @@ public class Controller {
         CommandLine cl = null;
         
         try {
-            String[] s = sc.nextLine().split(" ");
+            String[] s = cv.nextLine().split(" ");
             for (int i = 0; i< s.length; i++) {
                 s[i] = "-" + s[i];
             }
-            for (String s2 : s) {
-                ps.println("\"" + s2 + "\"");
-            }
+            /*for (String s2 : s) {
+                cv.println("\"" + s2 + "\"");
+            }*/
             cl = clp.parse(options2, s, true);
             
             //System.out.println(cl.getOptionValue("user"));
             
             if (cl.hasOption("getusers")) {
                 List<User> users = UserHelper.getUsers();//PhotosDAO.getAllUsers();
-                ps.print("Users: ");
+                cv.print("Users: ");
                 for (User a:users) {
-                    ps.print(a.getName());
-                    ps.print(", ");
+                    cv.print(a.getName());
+                    cv.print(", ");
                 }
-                ps.println();
+                cv.println();
             }
+            
             
             if (cl.hasOption("getuser")) {
                 //System.out.println("getuser");
-                String userName = cl.getOptionValue("user");
-                //System.out.println(userName);
-                List<User> users = PhotosDAO.getAllUsers();
-                User user = null;
-                for (User a:users) {
-                    if (a.getName().equals(userName)) {
-                        user = a;
-                        break;
+                //name or id?
+                if (cl.hasOption("id")) {
+                    try{
+                        cv.println("id=" + cl.getOptionValue("id"));
+                        long id = Long.parseLong(cl.getOptionValue("id"));
+                        //System.out.println(userName);
+                        cv.println("id=" + id);
+                        User user = UserHelper.getUserById(id);
+                        if (user == null) {
+                            cv.println("There is no user with id " + id + ".");
+                        } else {
+                            if (cl.hasOption("user") &&
+                                    !user.getName().equals(cl.getOptionValue("user")))
+                            {
+                                cv.println("There is user with id " + id + 
+                                        ", but his/her name is " + user.getName());
+                            } else {
+                                cv.println(user.toString());
+                            }
+                        }
+                    } catch (NumberFormatException nfe) {
+                        cv.println("Incorrect number format");
                     }
-                }
-                if (user != null) {
-                    ps.println(user.toString());
+                } else if (cl.hasOption("user")) {
+                    String userName = cl.getOptionValue("user");
+                    //System.out.println(userName);
+                    List<User> users = UserHelper.getUserByName(userName);
+                    if (users.size() > 1) {
+                        cv.println("There are more than one user with name " + userName + ".");
+                        //TODO What next? May be, disallow to add users with same names?
+                        cv.println("Try getuser id=<user_id>");
+                    } else if (users.size() == 1) {
+                        User user = users.iterator().next();
+                        cv.println(user.toString());
+                    } else {
+                        cv.println("There is no user " + userName + ".");
+                    }
                 } else {
-                    ps.println("There is no user " + userName);
+                    cv.println("Spicify user name (user=<user_name>) or id (id=<id>)");
                 }
             }
             
@@ -120,7 +150,7 @@ public class Controller {
         /*
          * try {
             String[] str = new String[1];
-            str[0] = sc.nextLine();
+            str[0] = cv.nextLine();
             System.out.println("str[0]="+str[0]);
                 cl = clp.parse(options2, str);
                 if (cl.hasOption("quit"))

@@ -1,5 +1,6 @@
 package ru.ncedu.laimz.photos;
 
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
@@ -20,12 +21,12 @@ class ConsoleViewExcepton extends Exception {
  *
  */
 public class ConsoleView {
-    private PrintStream ps;
-    private Scanner sc;
+    private PrintStream ps = null;
+    private Scanner sc = null;
     
-    public ConsoleView(PrintStream ps, Scanner sc) {
+    public ConsoleView(InputStream is, PrintStream ps) {
         this.ps = ps;
-        this.sc = sc;
+        this.sc = new Scanner(is);
     }
     
     public String nextLine() throws ConsoleViewExcepton {
@@ -39,6 +40,22 @@ public class ConsoleView {
     public void println(String s) throws ConsoleViewExcepton {
         if (ps != null) {
             ps.println(s);
+        } else {
+            throw new ConsoleViewExcepton( "PrintStream not initialized!" );
+        }
+    }
+
+    public void println() throws ConsoleViewExcepton {
+        if (ps != null) {
+            ps.println();
+        } else {
+            throw new ConsoleViewExcepton( "PrintStream not initialized!" );
+        }
+    }
+    
+    public void print(String s) throws ConsoleViewExcepton {
+        if (ps != null) {
+            ps.print(s);
         } else {
             throw new ConsoleViewExcepton( "PrintStream not initialized!" );
         }

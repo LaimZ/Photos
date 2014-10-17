@@ -14,7 +14,8 @@ public class Photos {
         List<Album> albums;// = new LinkedList<Album>();
         List<Photo> photos;*/
 
-        Controller controller = new Controller(System.in, System.out);
+        ConsoleView cv = new ConsoleView(System.in, System.out);
+        Controller controller = new Controller(cv);
         try {
             controller.connectDB(
                     "jdbc:oracle:thin:@//192.168.17.132:1521/ORADB10G", "USERA",
@@ -24,6 +25,9 @@ public class Photos {
             // TODO Auto-generated catch block
             System.out.println("Failed to connect DB!");
             e1.printStackTrace();
+        } catch (ConsoleViewExcepton e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         try{
@@ -35,6 +39,9 @@ public class Photos {
         } catch (SQLException | DBException e2) {
             e2.printStackTrace();
             controller.close();
+        }
+        catch (ConsoleViewExcepton e3) {
+            e3.printStackTrace();
         }
         //PhotosDAO.close();
 
