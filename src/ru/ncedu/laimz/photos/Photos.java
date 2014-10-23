@@ -1,5 +1,6 @@
 package ru.ncedu.laimz.photos;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import ru.ncedu.laimz.photos.controller.Controller;
@@ -23,6 +24,13 @@ public class Photos {
                     "jdbc:oracle:thin:@//192.168.17.132:1521/ORADB10G", "USERA",
                     "USERA");
             System.out.println("Connected!");
+            
+            
+            //Downloading new BLOB
+            
+            
+            
+            
         } catch (DBException e1) {
             // TODO Auto-generated catch block
             System.out.println("Failed to connect DB!");

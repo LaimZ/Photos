@@ -5,6 +5,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.beans.Statement;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,12 +25,12 @@ public class PhotosDAO {
     private static PreparedStatement getAllUsersStatement = null;
     private static PreparedStatement getUserByIdStatement = null;
     private static PreparedStatement getUserByNameStatement = null;
-    
+
     private static PreparedStatement getAllAlbumsStatement = null;
     private static PreparedStatement getAllUserAlbumsStatement = null;
     private static PreparedStatement getUserAlbumByNameStatement = null;
     private static PreparedStatement getUserAlbumByIdStatement = null;
-    
+
     private static PreparedStatement getAllPhotosInAlbumStatement = null;
     private static PreparedStatement getPhotoStatement = null;
 
@@ -62,8 +67,8 @@ public class PhotosDAO {
                 getUserAlbumByIdStatement = connection.prepareStatement(
                         "SELECT ID, NAME, AUTHOR_ID FROM Albums " +
                         "Where AUTHOR_ID = ? AND ID = ?");
-                        // for you not to select album of another user
-                
+                // for you not to select album of another user
+
                 getAllPhotosInAlbumStatement = connection.prepareStatement(
                         "SELECT * FROM Photos " +
                         "Where album_id = ?");
@@ -79,6 +84,39 @@ public class PhotosDAO {
         return -1;
     }
 
+    public static void addPhoto(long id, String name, long album_id, long author_id, String description, 
+            String tags,  File file) throws DBException {
+        if (connection != null && getAllUsersStatement != null) {
+            try {
+                PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO Photos (ID, NAME, ALBUM_ID, AUTHOR_ID, DESCRIPTION, TAGS, DATA) " +
+                        "VALUES (?,?,?,?,?,?,?)");
+                ps.setLong  (1, id);
+                ps.setString(2, name);
+                ps.setLong  (3, album_id);
+                ps.setLong  (4, author_id);
+                ps.setString(5, description);
+                ps.setString(6, tags);
+                //java.io.InputStream bodyIn = new java.io.FileInputStream("1.txt");
+                //java.io.File fileIn = new java.io.File("1.txt");
+                java.io.InputStream is = new java.io.FileInputStream(file);
+                ps.setBinaryStream(7, is, (int) file.length());
+                int count = ps.executeUpdate();
+                //System.out.println(count);
+                is.close();
+                ps.close();
+            } catch (FileNotFoundException e1) {
+                throw new DBException("File "+ file.getName()+" not found!", e1);
+            } catch (IOException e2) {
+                throw new DBException("IO Exception while working with "+ file.getName()+" .", e2);
+            } catch (SQLException e3) {
+                throw new DBException("SQLException while ", e3);
+            }
+        } else {
+            throw new DBException("Connection is null or statement is not initialized in DAO");
+        }
+    }
+
     public static void connectDB(String address, String user, String password) throws DBException {
         //System.out.println("-------- Oracle JDBC Connection Testing ------");
         try {
@@ -91,6 +129,40 @@ public class PhotosDAO {
             connection = DriverManager.getConnection(address, user, password);
             //                    "jdbc:oracle:thin:@//192.168.17.132:1521/ORADB10G", "USERA",
             //                    "USERA");
+            /*        
+            /*        
+            try {
+                java.io.File file = new java.io.File("1.txt");
+                java.io.PrintStream prstr;
+                prstr = new java.io.PrintStream(file);
+                prstr.print("This is 1.txt!");
+                prstr.close();
+
+
+                PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO Photos (ID, NAME, DATA) VALUES (3,?,?)");
+                ps.setString(1, "Name");
+                java.io.InputStream bodyIn = 
+                        new java.io.FileInputStream("1.txt");
+
+                java.io.File fileIn = new java.io.File("1.txt");
+                ps.setBinaryStream(2, bodyIn, (int) fileIn.length());
+                int count = ps.executeUpdate();
+                System.out.println(count);
+                bodyIn.close();
+                ps.close();
+
+
+
+
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }*/
+
         } catch (SQLException e) {
             throw new DBException("Connection Failed!");
         }
@@ -104,42 +176,59 @@ public class PhotosDAO {
 
     }
 
-    public static void close() {
+    public static boolean commit() {
+        //PreparedStatement ps = connection.prepareStatement("commit;");
+        try {
+            connection.commit();
+            return true;
+        } catch (SQLException e1) {
+            return false;
+        }
+    }
+
+    public static boolean close() {
         System.out.println("Closing...");
         if (connection != null) {
             try {
                 connection.close();
-                System.out.println("Closed correctly");
+                return true;
+                //System.out.println("Closed correctly");
             } catch (SQLException e) {
-
+                return false;
             }
+        } else {
+            return false;
         }
         //System.out.println("Closed");
     }
 
-    public static List<Album> getAllAlbums() throws SQLException {
+    public static List<Album> getAllAlbums() throws SQLException, DBException {
         List<Album> list = new LinkedList<Album>();
         if (connection != null && getAllAlbumsStatement != null) {
             ResultSet rs = getAllAlbumsStatement.executeQuery();
             while (rs.next()) {
                 list.add( new Album(rs.getLong(1), rs.getString(2), rs.getLong(3)) );
             }
+        } else {
+            throw new DBException("Connection is null or statement is not initialized in DAO");
         }
         return list;
     }
 
-    public static List<User> getAllUsers() throws SQLException {
+    public static List<User> getAllUsers() throws SQLException, DBException {
         List<User> list = new LinkedList<User>();
         if (connection != null && getAllUsersStatement != null) {
             ResultSet rs = getAllUsersStatement.executeQuery();
             while (rs.next()) {
                 list.add( new User(rs.getLong(1), rs.getString(2)) );
             }
+        } else {
+            throw new DBException("Connection is null or statement is not initialized in DAO");
         }
         return list;
     }
 
-    public static List<User> getUserByName(String user_name) throws SQLException {
+    public static List<User> getUserByName(String user_name) throws SQLException, DBException {
         List<User> list = new LinkedList<User>();
         if (connection != null && getUserByNameStatement != null) {
             getUserByNameStatement.setString(1, user_name);
@@ -147,6 +236,8 @@ public class PhotosDAO {
             while (rs.next()) {
                 list.add( new User(rs.getLong(1), rs.getString(2)) );
             }
+        } else {
+            throw new DBException("Connection is null or statement is not initialized in DAO");
         }
         return list;
     }
@@ -208,7 +299,7 @@ public class PhotosDAO {
         }
         return albums;
     }
-    
+
     public static Album getUserAlbumById(long user_id, long id) throws DBException {
         if (connection != null && getUserAlbumByIdStatement != null) {
             try {
@@ -228,7 +319,7 @@ public class PhotosDAO {
             throw new DBException("Connection is null or statement is not initialized in DAO");
         }
     }
-    
+
     public static List<Photo> getAllPhotosInAlbum(long album_id) throws DBException {
         List<Photo> photos = new LinkedList<Photo>();
         if (connection != null && getAllPhotosInAlbumStatement != null) {

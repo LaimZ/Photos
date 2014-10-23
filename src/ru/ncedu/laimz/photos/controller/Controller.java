@@ -1,5 +1,7 @@
 package ru.ncedu.laimz.photos.controller;
 
+import java.io.File;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +32,24 @@ public class Controller {
     private User currentUser = null;
     private Album currentAlbum = null;
 
+    public void close() {
+        try {
+            cv.println("commiting and closing...");
+            if (PhotosDAO.commit()) {
+                cv.println("Successfully commited");
+            } else {
+                cv.println("Committing fail");
+            }
+            if (PhotosDAO.close()) {
+                cv.println("Closed correctly");
+            } else {
+                cv.println("Closed with errors");
+            }
+        } catch (ConsoleViewExcepton e) {
+            //e.printStackTrace();
+        }
+    }
+
     public Controller(ConsoleView cv/*, PhotosDAO pDAO*/) {
         if (cv != null) {
             this.cv = cv;
@@ -44,6 +64,7 @@ public class Controller {
         options2.addOption("getphotos", "getphotos", false, "Photo name");
         options2.addOption("quit", "quit", false, "Exit program");
         options2.addOption("user", "user", true, "Specify user");
+        options2.addOption("upload", "upload", false, "Upload photo");
         options2.getOption("user").setValueSeparator('=');
         options2.addOption("id", "id", true, "Specify user or album id");
         options2.getOption("id").setValueSeparator('=');
@@ -56,10 +77,6 @@ public class Controller {
     public void connectDB(String address, String user, String password) throws DBException, ConsoleViewExcepton {
         cv.println("Connecting Database ...");
         PhotosDAO.connectDB(address, user, password);
-    }
-
-    public void close() {
-        PhotosDAO.close();
     }
 
     //public void parseOneCommand(InputStream is, PhotosDAO pDAO) {
@@ -215,24 +232,47 @@ public class Controller {
                     cv.println();
                 }
             }
-            
+
             if (cl.hasOption("getphotos")) {
                 if (currentUser == null || currentAlbum == null) {
                     cv.println("Firstly specify user (setuser user=<user_name>) " +
-                    		"and album (setalbum album=<album_name>).");
+                            "and album (setalbum album=<album_name>).");
                 } else {
                     List<Photo> photos = PhotoHelper.getAllPhotosInAlbum(currentAlbum.getId());//PhotosDAO.getAllPhotosInAlbum();
                     cv.print("User " + currentUser.getName() + " has photos in album " +
-                    currentAlbum.getName() + " : ");
+                            currentAlbum.getName() + " : ");
                     for (Photo a:photos) {
                         cv.print(a.getName());
                         cv.print(", ");
                     }
                     cv.println();
-                    
+
                 }
             }
-            
+
+
+            if (cl.hasOption("getphoto")) {
+                if (currentUser == null || currentAlbum == null) {
+                    cv.println("Firstly specify user (setuser user=<user_name>) " +
+                            "and album (setalbum album=<album_name>).");
+                } else {
+                    List<Photo> photos = PhotoHelper.getAllPhotosInAlbum(currentAlbum.getId());//PhotosDAO.getAllPhotosInAlbum();
+                    cv.print("User " + currentUser.getName() + " has photos in album " +
+                            currentAlbum.getName() + " : ");
+                    for (Photo a:photos) {
+                        cv.print(a.getName());
+                        cv.print(", ");
+                    }
+                    cv.println();
+
+                }
+            }
+
+            if (cl.hasOption("upload")) {
+                PhotosDAO.addPhoto(5, "Lena1", 4, 24, "Summer", "Lena, Summer", new File("Lena1.jpg"));
+                cv.println("Uploaded");
+            }
+
             if (cl.hasOption("quit")) {
                 close();
                 return true;
