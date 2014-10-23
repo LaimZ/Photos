@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,9 +20,14 @@ public class PhotosDAO {
     private static PreparedStatement getAllUsersStatement = null;
     private static PreparedStatement getUserByIdStatement = null;
     private static PreparedStatement getUserByNameStatement = null;
+    
     private static PreparedStatement getAllAlbumsStatement = null;
     private static PreparedStatement getAllUserAlbumsStatement = null;
+    private static PreparedStatement getUserAlbumByNameStatement = null;
+    private static PreparedStatement getUserAlbumByIdStatement = null;
+    
     private static PreparedStatement getAllPhotosInAlbumStatement = null;
+    private static PreparedStatement getPhotoStatement = null;
 
     private PhotosDAO() {}
 
@@ -52,9 +56,20 @@ public class PhotosDAO {
                 getAllUserAlbumsStatement = connection.prepareStatement(
                         "SELECT ID, NAME, AUTHOR_ID FROM Albums " +
                         "Where AUTHOR_ID = ?");
+                getUserAlbumByNameStatement = connection.prepareStatement(
+                        "SELECT ID, NAME, AUTHOR_ID FROM Albums " +
+                        "Where AUTHOR_ID = ? AND NAME = ?");
+                getUserAlbumByIdStatement = connection.prepareStatement(
+                        "SELECT ID, NAME, AUTHOR_ID FROM Albums " +
+                        "Where AUTHOR_ID = ? AND ID = ?");
+                        // for you not to select album of another user
+                
                 getAllPhotosInAlbumStatement = connection.prepareStatement(
                         "SELECT * FROM Photos " +
                         "Where album_id = ?");
+                getPhotoStatement = connection.prepareStatement(
+                        "SELECT * FROM Photos " +
+                        "Where id = ?");
                 return 0;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -135,7 +150,7 @@ public class PhotosDAO {
         }
         return list;
     }
-    
+
     public static User getUserById(long id) throws DBException {
         if (connection != null && getUserByIdStatement != null) {
             try {
@@ -154,40 +169,90 @@ public class PhotosDAO {
             throw new DBException("Connection is null or statement is not initialized in DAO");
         }
     }
-    
-    public static List<Album> getAllUserAlbums(long user_id) throws SQLException {
+
+    public static List<Album> getUserAlbums(long user_id) throws DBException {
         List<Album> albums = new LinkedList<Album>();
         if (connection != null && getAllUserAlbumsStatement != null) {
-            getAllUserAlbumsStatement.setLong(1, user_id);
-            ResultSet rs = getAllUserAlbumsStatement.executeQuery();
-            while (rs.next()) {
-                albums.add( new Album(rs.getLong(1), rs.getString(2), rs.getLong(3)) );
+            try {
+                getAllUserAlbumsStatement.setLong(1, user_id);
+                ResultSet rs = getAllUserAlbumsStatement.executeQuery();
+                while (rs.next()) {
+                    albums.add( new Album(rs.getLong(1), rs.getString(2), rs.getLong(3)) );
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                throw new DBException("Exception while getting user albums");
             }
         } else {
-            throw new NullPointerException();
+            throw new DBException("Connection is null or statement is not initialized in DAO");
         }
         return albums;
     }
 
-    public static List<Photo> getAllPhotosInAlbum(long album_id) throws SQLException {
-        List<Photo> photos = new LinkedList<Photo>();
-        if (connection != null && getAllUserAlbumsStatement != null) {
-            getAllUserAlbumsStatement.setLong(1, album_id);
-            ResultSet rs = getAllPhotosInAlbumStatement.executeQuery();
-            while (rs.next()) {
-                photos.add( new Photo(
-                        rs.getString(1),
-                        rs.getLong(2),
-                        rs.getLong(3),
-                        rs.getLong(4),
-                        rs.getString(5),
-                        rs.getString(6),
-                        new byte[1]
-                        )
-                        );
+    public static List<Album> getUserAlbumByName(long user_id, String name) throws DBException {
+        List<Album> albums = new LinkedList<Album>();
+        if (connection != null && getUserAlbumByNameStatement != null) {
+            try {
+                getUserAlbumByNameStatement.setLong(1, user_id);
+                getUserAlbumByNameStatement.setString(2, name);
+                ResultSet rs = getUserAlbumByNameStatement.executeQuery();
+                while (rs.next()) {
+                    albums.add( new Album(rs.getLong(1), rs.getString(2), rs.getLong(3)) );
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                throw new DBException("Exception while getting user albums");
             }
         } else {
-            throw new NullPointerException();
+            throw new DBException("Connection is null or statement is not initialized in DAO");
+        }
+        return albums;
+    }
+    
+    public static Album getUserAlbumById(long user_id, long id) throws DBException {
+        if (connection != null && getUserAlbumByIdStatement != null) {
+            try {
+                getUserAlbumByIdStatement.setLong(1, user_id);
+                getUserAlbumByIdStatement.setLong(2, id);
+                ResultSet rs = getUserAlbumByIdStatement.executeQuery();
+                if (rs.next()) {
+                    return new Album(rs.getLong(1), rs.getString(2), rs.getLong(3));
+                } else {
+                    return null;
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                throw new DBException("Exception while getting user albums");
+            }
+        } else {
+            throw new DBException("Connection is null or statement is not initialized in DAO");
+        }
+    }
+    
+    public static List<Photo> getAllPhotosInAlbum(long album_id) throws DBException {
+        List<Photo> photos = new LinkedList<Photo>();
+        if (connection != null && getAllPhotosInAlbumStatement != null) {
+            try {
+                getAllPhotosInAlbumStatement.setLong(1, album_id);
+                ResultSet rs = getAllPhotosInAlbumStatement.executeQuery();
+                while (rs.next()) {
+                    photos.add( new Photo(
+                            rs.getLong(1),//ID
+                            rs.getString(2),//Name
+                            rs.getLong(3),//ALBUM_ID
+                            rs.getLong(4),//AUTHOR_ID
+                            rs.getString(5),//DESCRIPTION
+                            rs.getString(6),//TAGS
+                            new byte[1]
+                            )
+                            );
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                throw new DBException("Exception while getting user albums");
+            }
+        } else {
+            throw new DBException("Connection is null or statement is not initialized in DAO");
         }
         return photos;
     }
@@ -209,5 +274,6 @@ public class PhotosDAO {
     public static Album getAlbum (BigInteger id) {
         return new Album();
     }
+
 
 }

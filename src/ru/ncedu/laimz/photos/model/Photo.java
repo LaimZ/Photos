@@ -14,8 +14,8 @@ public class Photo {
 
     public Photo() {}
     
-    public Photo(String name,
-            long id,
+    public Photo(long id,
+            String name,
             long albumId,
             long authorId,
             String description,
