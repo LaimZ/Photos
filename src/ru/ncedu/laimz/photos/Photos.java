@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import ru.ncedu.laimz.photos.controller.Controller;
 import ru.ncedu.laimz.photos.view.ConsoleView;
 import ru.ncedu.laimz.photos.view.ConsoleViewExcepton;
+import ru.ncedu.laimz.photos.view.FakeConsoleView;
 
 public class Photos {
 
@@ -17,12 +18,16 @@ public class Photos {
         List<Album> albums;// = new LinkedList<Album>();
         List<Photo> photos;*/
 
-        ConsoleView cv = new ConsoleView(System.in, System.out);
+        ConsoleView cv2 = new ConsoleView(System.in, System.out);
+        ConsoleView cv = new FakeConsoleView(System.in, System.out, cv2);
         Controller controller = new Controller(cv);
         try {
             controller.connectDB(
                     "jdbc:oracle:thin:@//192.168.17.132:1521/ORADB10G", "USERA",
                     "USERA");
+            /*controller.connectDB(
+                    "jdbc:oracle:thin:@//192.168.184.128:1521/ORADB10G", "USERA",
+                    "USERA");*/
             System.out.println("Connected!");
             
             

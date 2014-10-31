@@ -1,10 +1,17 @@
 package ru.ncedu.laimz.photos.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.naming.InvalidNameException;
+
 import org.apache.commons.cli.GnuParser;
 
 import org.apache.commons.cli.*;
@@ -34,7 +41,7 @@ public class Controller {
 
     public void close() {
         try {
-            cv.println("commiting and closing...");
+            //cv.println("commiting and closing...");
             if (PhotosDAO.commit()) {
                 cv.println("Successfully commited");
             } else {
@@ -60,11 +67,17 @@ public class Controller {
         options2.addOption("getusers", "getusers", false, "Get some info (users, albums, photos)");
         options2.addOption("getalbums",  "getalbums", false, "User name");
         options2.addOption("setalbum", "setalbum", false, "Album name");
-        options2.addOption("getphoto", "getphoto", false, "Photo name");
+        //options2.addOption("getphoto", "getphoto", false, "Photo name");
         options2.addOption("getphotos", "getphotos", false, "Photo name");
         options2.addOption("quit", "quit", false, "Exit program");
-        options2.addOption("user", "user", true, "Specify user");
+        options2.addOption("download", "download", false, "Download album");
         options2.addOption("upload", "upload", false, "Upload photo");
+        
+        options2.addOption("file", "file", true, "Upload photo from file");
+        options2.getOption("file").setValueSeparator('=');
+        options2.addOption("name", "name", true, "Upload photo name");
+        options2.getOption("name").setValueSeparator('=');
+        options2.addOption("user", "user", true, "Specify user");
         options2.getOption("user").setValueSeparator('=');
         options2.addOption("id", "id", true, "Specify user or album id");
         options2.getOption("id").setValueSeparator('=');
@@ -267,10 +280,82 @@ public class Controller {
 
                 }
             }
+//
+//            if (cl.hasOption("upload")) {
+//                PhotosDAO.addPhoto(5, "Lena1", 4, 24, "Summer", "Lena, Summer", new File("Lena1.jpg"));
+//                cv.println("Uploaded");
+//            }
+            
+            if (cl.hasOption("download")) {
+                if (currentUser!=null && currentAlbum!=null) {
+                    List<Photo> photos = PhotoHelper.getAllPhotosInAlbum(currentAlbum.getId());
+                    for (Photo p : photos) {
+                        File userPath = new File (currentUser.getName());
+                        //+ File.pathSeparator + currentAlbum.getName() + File.pathSeparator + p.getName()+ ".jpg");
+                        if (userPath.exists()) {
+                            if (!userPath.isDirectory()) {
+                                //delete file and create directory
+                                userPath.delete();
+                                userPath.mkdir();
+                            }
+                        } else {
+                            userPath.mkdir();
+                        }
+                        File albumPath = new File (currentUser.getName()+ File.separator+ currentAlbum.getName());
+                        if (albumPath.exists()) {
+                            if (!albumPath.isDirectory()) {
+                                //delete file and create directory
+                                albumPath.delete();
+                                albumPath.mkdir();
+                            }
+                        } else {
+                            albumPath.mkdir();
+                        }
+                        File ofile = new File(currentUser.getName()+ File.separator +
+                                currentAlbum.getName() + File.separator +
+                                p.getName()+ ".jpg");
+                        if (ofile.exists()) {
+                            ofile.delete();
+                        }
+                        try {
+                            FileOutputStream ostream = new FileOutputStream(ofile);
+                                ostream.write(p.getData());
+                                ostream.close();
+                        } catch (FileNotFoundException e) {
+                            cv.println("Error while writing files!");
+                        } catch (IOException e) {
+                            cv.println("Error while writing files!");
+                        }
+                    }
+                } else {
+                    cv.println("Please, specify user and album!!!");
+                }
+            }
 
             if (cl.hasOption("upload")) {
-                PhotosDAO.addPhoto(5, "Lena1", 4, 24, "Summer", "Lena, Summer", new File("Lena1.jpg"));
-                cv.println("Uploaded");
+                if (currentUser!=null && currentAlbum!=null) {
+                    if (cl.hasOption("file") && cl.hasOption("name")) {
+                        try{
+                            PhotoHelper.UploadPhoto(currentUser,currentAlbum,
+                                cl.getOptionValue("file"),
+                                cl.getOptionValue("name"),
+                                cl.getOptionValue("Description"),
+                                cl.getOptionValue("tags")
+                                );
+
+                            PhotosDAO.commit();
+                            cv.println("Uploaded");
+                        } catch (FileNotFoundException fnfe) {
+                            cv.println("File " + cl.getOptionValue("file") +
+                                    " not found!");
+                        }
+                    } else {
+                        cv.println("Not uploaded");
+                    }
+                    
+                } else {
+                    cv.println("Please, specify user and album!!!");
+                }
             }
 
             if (cl.hasOption("quit")) {
@@ -278,58 +363,8 @@ public class Controller {
                 return true;
             }
         } catch (ParseException e) {
-
+            cv.println("Incorrect syntax!");
         }
         return false;
-
-        /*
-         * try {
-            String[] str = new String[1];
-            str[0] = cv.nextLine();
-            System.out.println("str[0]="+str[0]);
-                cl = clp.parse(options2, str);
-                if (cl.hasOption("quit"))
-                    return true;
-                if (cl.hasOption("get")) {
-                    System.out.println("get!");
-                    if (cl.hasOption("user")) { //bring user info
-                        String s2 = cl.getOptionValue("user");
-                        User user = null;
-                        //if (("users").equals(m.group(1))) {
-                        users = pDAO.getAllUsers();
-                        for (User a:users) {
-                            if (a.getName().equals(s2)) {
-                                user = a;
-                                break;
-                            }
-                        }
-                        if (user != null) {
-                            System.out.println(user.toString());
-                        } else {
-                            System.out.println("There is no such user");
-                        }
-                    }//bring user info
-
-
-                }
-                   if (cl.getOptions().length > 0) {
-                       for (Option o:cl.getOptions()) {
-                           System.out.println(o.getOpt());
-                       }
-                   }
-                if (cl.hasOption("getall")) {
-                    System.out.println(cl.getOptionValue("getall"));
-                    if (cl.getOptionValue("getall").equals("users")) { //bring all users
-                        //if (("users").equals(m.group(1))) {
-                        System.out.println("Users:");
-                        users = pDAO.getAllUsers();
-                        for (User a:users) {
-                                System.out.println(a.getName());
-                        }
-                    }//bring all users
-                }*/
-
-
-
     }
 }
