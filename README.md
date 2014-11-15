@@ -6,6 +6,10 @@ Java, jdbc OracleSQL, ApacheCLI
 
 This is program is photo storege, wich allows you add photos (in .jpg format) into OracleSQL Database, link them with users, albums, note them with descriptions and tags. Program uses command line interface (see below).
 
+To compile it, use ''mvn compile''
+
+To run it, use 
+''java -cp lib/commons-cli-1.2-bin/commons-cli-1.2/commons-cli-1.2.jar;lib/ojdbc14_g.jar;target/classes ru.ncedu.laimz.photos.Photos''
 Command Line Interface
 ----------------------
 
