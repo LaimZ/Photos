@@ -12,28 +12,20 @@ import java.util.Scanner;
  * @author LaimZ
  *
  */
-public class FakeConsoleView implements ConsoleView {
+public class ConsoleViewFirst implements ConsoleView {
     private PrintStream ps = null;
     private Scanner sc = null;
-    private static String[] input = {"setuser user=Lena",
-                                        "setalbum album=\"Lena's_Summer\"",
-                                        "download"
-    };
-    int index = 0;
-    private ConsoleView cv2;
     
-    public FakeConsoleView(InputStream is, PrintStream ps, ConsoleView cv2) {
+    public ConsoleViewFirst (InputStream is, PrintStream ps) {
         this.ps = ps;
         this.sc = new Scanner(is);
-        this.cv2 = cv2;
     }
     
     public String nextLine() throws ConsoleViewExcepton {
-        if (index < input.length) {
-            return input[index++];
+        if (sc != null) {
+            return sc.nextLine();
         } else {
-            return cv2.nextLine();
-            //throw new ConsoleViewExcepton( "Scanner not initialized!" );
+            throw new ConsoleViewExcepton( "Scanner not initialized!" );
         }
     }
     

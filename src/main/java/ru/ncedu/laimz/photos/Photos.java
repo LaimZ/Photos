@@ -4,9 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import ru.ncedu.laimz.photos.controller.Controller;
-import ru.ncedu.laimz.photos.view.ConsoleView;
-import ru.ncedu.laimz.photos.view.ConsoleViewExcepton;
-import ru.ncedu.laimz.photos.view.FakeConsoleView;
+import ru.ncedu.laimz.photos.view.*;
 
 public class Photos {
 
@@ -18,7 +16,7 @@ public class Photos {
         List<Album> albums;// = new LinkedList<Album>();
         List<Photo> photos;*/
 
-        ConsoleView cv2 = new ConsoleView(System.in, System.out);
+        ConsoleView cv2 = new ConsoleViewFirst(System.in, System.out);
         ConsoleView cv = new FakeConsoleView(System.in, System.out, cv2);
         Controller controller = new Controller(cv);
         try {

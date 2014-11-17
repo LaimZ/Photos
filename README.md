@@ -10,6 +10,9 @@ To compile it, use ''mvn compile''
 
 To run it, use 
 ''java -cp lib/commons-cli-1.2-bin/commons-cli-1.2/commons-cli-1.2.jar;lib/ojdbc14_g.jar;target/classes ru.ncedu.laimz.photos.Photos''
+or
+''java -cp target/JavaServerFaces/WEB-INF/lib/ojdbc14_g.jar;target/JavaServerFaces/WEB-INF/classes;target/JavaServerFaces/WEB-INF/lib/commons-cli-1.2.jar ru.ncedu.laimz.photos.Photos''
+
 Command Line Interface
 ----------------------
 
